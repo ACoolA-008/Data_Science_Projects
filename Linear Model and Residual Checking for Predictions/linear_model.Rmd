@@ -1,0 +1,484 @@
+---
+title: "HM4"
+author: "Mu Cheng"
+date: "3/15/2021"
+output: pdf_document
+---
+
+## Problem1
+
+Step1: Call the Original Dataframe of the Life_Expectancy
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+getwd()
+setwd("~/Desktop/5110/HM4/ddf--gapminder--systema_globalis-master/countries-etc-datapoints")
+library("readr")
+library(ggplot2)
+library(RSQLite)
+library(dbplyr)
+library(DBI)
+
+life_expectancy_ori <- read_csv("ddf--datapoints--life_expectancy_years--by--geo--time.csv")
+life_expectancy_ori <- na.omit(life_expectancy_ori)
+
+
+setwd("~/Desktop/5110/HM4/ddf--gapminder--systema_globalis-master/countries-etc-datapoints")
+infant_mortality_ori <- read_csv(
+  "ddf--datapoints--infant_mortality_rate_per_1000_births--by--geo--time.csv")
+infant_mortality_ori <- na.omit(infant_mortality_ori)
+
+
+setwd("~/Desktop/5110/HM4/ddf--gapminder--systema_globalis-master/countries-etc-datapoints")
+murder_ori <- read_csv(
+  "ddf--datapoints--murder_per_100000_people--by--geo--time.csv")
+murder_ori <- na.omit(murder_ori)
+
+
+setwd("~/Desktop/5110/HM4/ddf--gapminder--systema_globalis-master/countries-etc-datapoints")
+GDP_inflation_ori <- read_csv(
+  "ddf--datapoints--total_gdp_us_inflation_adjusted--by--geo--time.csv")
+GDP_inflation_ori <- na.omit(GDP_inflation_ori)
+
+
+setwd("~/Desktop/5110/HM4/ddf--gapminder--systema_globalis-master/countries-etc-datapoints")
+MD_ori <- read_csv(
+  "ddf--datapoints--medical_doctors_per_1000_people--by--geo--time.csv")
+MD_ori <- na.omit(MD_ori)
+
+
+setwd("~/Desktop/5110/HM4/ddf--gapminder--systema_globalis-master/countries-etc-datapoints")
+poverty_rate_ori <- read_csv(
+  "ddf--datapoints--poverty_percent_people_below_550_a_day--by--geo--time.csv")
+poverty_rate_ori <- na.omit(poverty_rate_ori)
+
+
+con <- dbConnect(SQLite(), ":memory:")
+dbWriteTable(con, "life_expectancy_ori", life_expectancy_ori)
+dbWriteTable(con, "infant_mortality_ori", infant_mortality_ori)
+dbWriteTable(con, "murder_ori", murder_ori)
+dbWriteTable(con, "GDP_inflation_ori", GDP_inflation_ori)
+dbWriteTable(con, "MD_ori", MD_ori)
+dbWriteTable(con, "poverty_rate_ori", poverty_rate_ori)
+
+LE_data1 <-dbGetQuery(con, "SELECT DISTINCT
+infant_mortality_ori.geo,
+infant_mortality_ori.time,
+infant_mortality_ori.infant_mortality_rate_per_1000_births,
+life_expectancy_ori.life_expectancy_years
+FROM life_expectancy_ori
+INNER JOIN infant_mortality_ori
+WHERE infant_mortality_ori.geo = life_expectancy_ori.geo
+AND infant_mortality_ori.time=life_expectancy_ori.time")
+dbWriteTable(con, "LE_data1", LE_data1)
+
+
+LE_data2 <-dbGetQuery(con, "SELECT DISTINCT
+murder_ori.geo,
+murder_ori.time,
+murder_ori.murder_per_100000_people,
+GDP_inflation_ori.total_gdp_us_inflation_adjusted
+FROM GDP_inflation_ori
+INNER JOIN murder_ori
+WHERE murder_ori.geo=GDP_inflation_ori.geo
+AND murder_ori.time=GDP_inflation_ori.time")
+dbWriteTable(con, "LE_data2", LE_data2)
+
+
+LE_data3 <-dbGetQuery(con, "SELECT DISTINCT
+MD_ori.geo,
+MD_ori.time,
+MD_ori.medical_doctors_per_1000_people,
+poverty_rate_ori.poverty_percent_people_below_550_a_day
+FROM poverty_rate_ori
+INNER JOIN MD_ori
+WHERE MD_ori.geo = poverty_rate_ori.geo
+AND MD_ori.time=poverty_rate_ori.time")
+dbWriteTable(con, "LE_data3", LE_data3)
+
+
+LE_data4 <- dbGetQuery(con, "SELECT
+LE_data1.geo,
+LE_data1.time,
+LE_data1.infant_mortality_rate_per_1000_births,
+LE_data1.life_expectancy_years,
+LE_data2.murder_per_100000_people,
+LE_data2.total_gdp_us_inflation_adjusted
+FROM LE_data1
+JOIN LE_data2
+WHERE LE_data2.geo=LE_data1.geo
+AND LE_data2.time=LE_data1.time
+")
+dbWriteTable(con, "LE_data4", LE_data4)
+
+LE_data <- dbGetQuery(con, "SELECT
+LE_data4.geo,
+LE_data4.time,
+LE_data4.infant_mortality_rate_per_1000_births,
+LE_data4.life_expectancy_years,
+LE_data4.murder_per_100000_people,
+LE_data4.total_gdp_us_inflation_adjusted,
+LE_data3.medical_doctors_per_1000_people,
+LE_data3.poverty_percent_people_below_550_a_day
+FROM LE_data4
+JOIN LE_data3
+WHERE LE_data3.geo=LE_data4.geo
+AND LE_data3.time=LE_data4.time
+")
+dbWriteTable(con, "LE_data", LE_data)
+```
+le1: life_expectancy_years against infant_mortality_rate_per_1000_births.
+Log10 transformation on both variables.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+le1<- ggplot(LE_data, mapping=aes(x=log10(life_expectancy_years), 
+                                  y=log10(infant_mortality_rate_per_1000_births))) +
+  geom_point(alpha=0.1) + geom_smooth(method = 'loess', formula='y ~ x') + geom_smooth(method="lm", color="red") +
+  labs(x="Life Expectancy Years", 
+       y="Infant Mortality Rate Per 1000 Births", 
+       title=
+"The higher life-expectancy the lower infant mortality rate over time period (1800-2015)") + 
+  theme_minimal()
+le1
+```
+
+le2: life_expectancy_years against murder_per_100000_people.
+Log10 transformations on both variables.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+le2<- ggplot(LE_data, mapping=aes(x=log10(life_expectancy_years), 
+                                  y=log10(murder_per_100000_people))) +
+  geom_point(alpha=0.1) + geom_smooth(method = 'loess', formula='y ~ x') +  geom_smooth(method="lm", color="red") +
+  labs(x="Life Expectancy Years", 
+       y="murder_per_100000_people", 
+       title=
+"As life expectancy increases in years, murder rate goes down during (1800-2015)") + theme_minimal()
+le2
+```
+
+le3: life_expectancy_years against total_gdp_us_inflation_adjusted.
+Log10 transformations on x variable.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+le3 <- ggplot(LE_data, mapping=aes(x=log10(life_expectancy_years), 
+                                  y=total_gdp_us_inflation_adjusted)) +
+  geom_point(alpha=0.1) + geom_smooth(method = 'loess', formula='y ~ x') +  geom_smooth(method="lm", color="red") +
+  labs(x="Life Expectancy Years", 
+       y="total_gdp_us_inflation_adjusted", 
+       title=
+"No Specific relation is found between life expectancy and gdp inflation between (1800-2015)") + theme_minimal()
+le3
+```
+
+le4: life_expectancy_years against medical_doctors_per_1000_people.
+Log10 transformations on both variables.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+le4 <- ggplot(LE_data, mapping=aes(x=log10(life_expectancy_years), 
+                                  y=log10(medical_doctors_per_1000_people))) +
+  geom_point(alpha=0.1) + geom_smooth(method = 'loess', formula='y ~ x') +  geom_smooth(method="lm", color="red") +
+  labs(x="Life Expectancy Years", 
+       y="medical_doctors_per_1000_people", 
+       title=
+"More medical doctors continue to be needed as life expectancy increases during (1800-2015)") + theme_minimal()
+le4
+```
+
+le5: life_expectancy_years against poverty_percent_people_below_550_a_day.
+Log10 transformations on x variable.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+
+le5 <- ggplot(LE_data, mapping=aes(x=log10(life_expectancy_years), 
+                                  y=poverty_percent_people_below_550_a_day)) +
+  geom_point(alpha=0.1) + geom_smooth(method = 'loess', formula='y ~ x') + 
+  geom_smooth(method="lm", color="red") +
+  labs(x="Life Expectancy Years", 
+       y="poverty_percent_people_below_550_a_day", 
+       title=
+"Poverty rate in general decreases as life expectancy increases during (1800-2015)") + 
+  theme_minimal()
+le5
+```
+
+## Problem2
+
+Based on previous graphs, the response variable, Murder_per_10000_people, has the 
+best linearity among all the plots. Therefore, Murder_per_10000_people is 
+utilized here as a predictor.
+
+Residual graph demonstrates a clear pattern(increasing line) when plotting
+without log transformation, with r squared value around 0.3115. It's in violation
+of model assumptions(linearity) Therefore, adjustment of adding log10() to both 
+variables is made. Then the value of r squared is better with 0.6112. 
+After making the adjustments, the plotted residual graph with a better 
+model (fit1) is then normal in demonstration.
+
+Step 1. Compare better fit vs. bad fit's summary stats.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(modelr)
+library(broom)
+
+murder_graph <- ggplot(LE_data, aes(x=log10(life_expectancy_years), 
+                                    y=log10(murder_per_100000_people))) +
+  geom_point(alpha=0.1) + geom_smooth() + geom_smooth(method="lm", color="red") +
+  labs(x="Life Expectancy in Years", 
+       y="Number of murder per 10000 people",
+    title="As life expectancy increases in years, murder rate goes down during (1800-2015)") +
+  geom_smooth(method="lm", color="red") + theme_minimal()
+murder_graph
+  
+fit1 <- lm(log10(life_expectancy_years) ~ log10(murder_per_100000_people), 
+           data=LE_data)
+summary(fit1)
+glance(fit1)
+
+fitbad <- lm(life_expectancy_years ~ murder_per_100000_people, 
+           data=LE_data)
+summary(fitbad)
+glance(fitbad)
+
+```
+
+Step 2.
+Compare both fit and bad models on both residual plots, then check the
+normality of the two residuals by using qq_plot, finally check the residual
+outlier with olsrr package.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library("olsrr")
+bad_residual <- LE_data %>%
+  add_residuals(fitbad, "resid") %>%
+  ggplot(aes(x=log10(life_expectancy_years))) +
+  geom_point(aes(y=resid), alpha=0.1) +
+  labs(x="life expectancy in years", y="residuals") +
+  theme_minimal()
+bad_residual
+
+bad_residual_qq <- LE_data %>%
+  add_residuals(fitbad, "resid") %>%
+  ggplot(aes(sample=resid)) +
+  geom_qq() +
+  theme_minimal()
+bad_residual_qq
+
+bad_residual_box <- ols_plot_resid_box(fitbad)
+bad_residual_box
+
+better_residual <- LE_data %>%
+  add_residuals(fit1, "resid") %>%
+  ggplot(aes(x=log10(life_expectancy_years))) +
+  geom_point(aes(y=resid), alpha=0.1) +
+  labs(x="life expectancy in years", y="residuals") +
+  theme_minimal()
+better_residual
+
+better_residual_qq <- LE_data %>%
+  add_residuals(fit1, "resid") %>%
+  ggplot(aes(sample=resid)) +
+  geom_qq() + labs(y="sample", x="theoretical")
+  theme_minimal()
+better_residual_qq
+
+better_residual_box <- ols_plot_resid_box(fit1)
+better_residual_box
+```
+
+Removing outliers. TO BE REMOVED. Not so much of the difference.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+better_residual_removedOutlier <- fit1[!fit1 %in% better_residual_box$out]
+boxplot(x=better_residual_removedOutlier$residuals,
+        y=better_residual_removedOutlier$residuals)
+
+```   
+
+## Problem3
+
+Using total_gdp_us_inflation_adjusted as the one additional predictor after 
+comparing the 4 different predictors. The adjusted R^2 increases to 0.6311 
+from 0.6112.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+pred_infant <- LE_data %>%
+  add_residuals(fit1, "resid") %>%
+  ggplot(aes(x=infant_mortality_rate_per_1000_births, y=resid)) +
+  geom_point() + geom_smooth() +
+  labs(x="infant_mortality_rate_per_1000_births", y="Residuals") +
+  theme_minimal()
+pred_infant
+
+pred_gdp <- LE_data %>%
+  add_residuals(fit1, "resid") %>%
+  ggplot(aes(x=total_gdp_us_inflation_adjusted, y=resid)) +
+  geom_point() + geom_smooth() +
+  labs(x="total_gdp_us_inflation_adjusted", y="Residuals") +
+  theme_minimal()
+pred_gdp
+
+pred_dc <- LE_data %>%
+  add_residuals(fit1, "resid") %>%
+  ggplot(aes(x=medical_doctors_per_1000_people, y=resid)) +
+  geom_point() + geom_smooth() +
+  labs(x="medical_doctors_per_1000_people", y="Residuals") +
+  theme_minimal()
+pred_dc
+
+pred_poverty <- LE_data %>%
+  add_residuals(fit1, "resid") %>%
+  ggplot(aes(x=poverty_percent_people_below_550_a_day, y=resid)) +
+   geom_point() + geom_smooth() +
+  labs(x="poverty_percent_people_below_550_a_day", y="Residuals") +
+  theme_minimal()
+pred_poverty
+
+```
+
+
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+fit2 <- lm(log10(life_expectancy_years) ~ log10(murder_per_100000_people) +
+             total_gdp_us_inflation_adjusted, data=LE_data)
+summary(fit2)
+
+better_residual <- LE_data %>%
+  add_residuals(fit2, "resid") %>%
+  ggplot(aes(x=log10(life_expectancy_years))) +
+  geom_point(aes(y=resid), alpha=0.1) +
+  labs(x="life expectancy in years", y="residuals") +
+  theme_minimal()
+better_residual
+
+better_residual_qq <- LE_data %>%
+  add_residuals(fit2, "resid") %>%
+  ggplot(aes(sample=resid)) +
+  geom_qq() + labs(y="sample", x="theoretical", title="Normal Residual Graph")
+  theme_minimal()
+better_residual_qq
+```
+
+## Problem4
+
+The better model from problem3 has a smaller cv RMSE at 0.01565241 whereas
+the original model has a larger cv RMSE at 0.0161054. It's not surprising as
+we know the more variables we add the better model will show a smaller CV RMSE.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+LE_data_cv <- crossv_kfold(LE_data, 10)
+LE_data_cv
+
+cv_better_model <- LE_data_cv %>%
+  mutate(fit = purrr::map(train, 
+                          ~lm(log10(life_expectancy_years) ~ 
+                                log10(murder_per_100000_people) +
+             total_gdp_us_inflation_adjusted, data=.)),
+         rmse=purrr::map2_dbl(fit, test, ~rmse(.x, .y)))
+cv_better_model
+
+cv_original <- LE_data_cv %>%
+  mutate(fit = purrr::map(train, 
+                          ~lm(log10(life_expectancy_years) ~ 
+                                log10(murder_per_100000_people), data=.)),
+         rmse=purrr::map2_dbl(fit, test, ~rmse(.x, .y)))
+cv_original
+
+mean(cv_better_model$rmse)
+mean(cv_original$rmse)
+```
+
+## Problem5
+
+Partitioning
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(10)
+LE_data_part <- resample_partition(LE_data,
+                                   p=c(train=0.5,
+                                       valid=0.25,
+                                       test=0.25))
+LE_data_part
+
+step1 <- function(response, predictors, candidates, partition)
+{
+  rhs <- paste0(paste0(predictors, collapse="+"), "+", candidates)
+  formulas <- lapply(paste0(response, "~", rhs), as.formula)
+  rmses <- sapply(formulas,
+                  function(fm) rmse(lm(fm, data=partition$train),
+                                    data=partition$valid))
+  names(rmses) <- candidates
+  attr(rmses, "best") <- rmses[which.min(rmses)]
+  rmses
+}
+
+model <- NULL
+```
+
+
+step1
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+preds <- "1"
+cands <- c("log10(infant_mortality_rate_per_1000_births)",
+           "log10(murder_per_100000_people)", 
+           "total_gdp_us_inflation_adjusted",
+           "log10(medical_doctors_per_1000_people)",
+           "poverty_percent_people_below_550_a_day")
+s1 <- step1("log10(life_expectancy_years)", preds, cands, LE_data_part)
+
+model <- c(model, attr(s1, "best"))
+s1
+```
+
+Step2 adding log10(infant_mortality_rate_per_1000_births)
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+preds <- "log10(infant_mortality_rate_per_1000_births)"
+cands <- c("log10(murder_per_100000_people)", 
+           "total_gdp_us_inflation_adjusted",
+           "log10(medical_doctors_per_1000_people)",
+           "poverty_percent_people_below_550_a_day")
+s2 <- step1("log10(life_expectancy_years)", preds, cands, LE_data_part)
+
+model <- c(model, attr(s2, "best"))
+s2
+```
+Step 3 Adding "log10(murder_per_100000_people)"
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+preds <- c("log10(infant_mortality_rate_per_1000_births)", 
+"log10(murder_per_100000_people)")
+cands <- c("total_gdp_us_inflation_adjusted",
+           "log10(medical_doctors_per_1000_people)",
+           "poverty_percent_people_below_550_a_day")
+s3 <- step1("log10(life_expectancy_years)", preds, cands, LE_data_part)
+
+model <- c(model, attr(s3, "best"))
+s3
+```
+Step 4 Adding total_gdp_us_inflation_adjusted 
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+preds <- c("log10(infant_mortality_rate_per_1000_births)", 
+"log10(murder_per_100000_people)", "total_gdp_us_inflation_adjusted")
+cands <- c("log10(medical_doctors_per_1000_people)",
+           "poverty_percent_people_below_550_a_day")
+s4 <- step1("log10(life_expectancy_years)", preds, cands, LE_data_part)
+
+model <- c(model, attr(s4, "best"))
+s4
+```
+
+Step 5 Adding poverty_percent_people_below_550_a_day.
+Then stop at step 5 due to the increasing RMSE value of 
+log(medical_doctors_per_1000_people).
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+preds <- c("log10(infant_mortality_rate_per_1000_births)", 
+"log10(murder_per_100000_people)", "total_gdp_us_inflation_adjusted",
+"poverty_percent_people_below_550_a_day")
+cands <- c("log10(medical_doctors_per_1000_people)")
+s5 <- step1("log10(life_expectancy_years)", preds, cands, LE_data_part)
+
+model <- c(model, attr(s5, "best"))
+s5
+```
+
+Plotting
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+step_model <- tibble(index=seq_along(model),
+                     variable=factor(names(model), levels=names(model)),
+                     RMSE=model)
+
+ggplot(step_model, aes(y=RMSE)) +
+  geom_point(aes(x=variable)) +
+  geom_line(aes(x=index)) +
+  labs(title="Stepwise model selection") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle=90, vjust=0.5,  hjust=1))
+```
