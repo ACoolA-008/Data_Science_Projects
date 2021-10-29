@@ -1,0 +1,313 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Local Database: MySQL on AWS
+```{r}
+# 1. Library (must be installed prior to loading
+library(RMySQL)     ### MySQL
+library(RMariaDB)   ### MariaDB
+library(DBI)
+
+# 2. Settings
+db_user <- 'mu_bai'
+db_password <- 'Mc5539899!'
+db_name <- 'mu_bai_aws_db'
+db_host <- 'cs5200-dbs.c6iyvvr9xuen.us-east-2.rds.amazonaws.com'
+db_port <- 3306
+
+
+# 3. Connect to DB
+my_awsDB <-  dbConnect(MySQL(), user = db_user, password = db_password,
+                 dbname = db_name, host = db_host, port = db_port)
+
+```
+
+
+```{r}
+
+dbListTables(my_awsDB)
+```
+
+## TASK 1. CREATE TABLES
+
+##create airlines table
+
+```{sql connection=my_awsDB}
+DROP TABLE IF EXISTS airlines
+```
+
+```{sql connection=my_awsDB}
+CREATE TABLE airlines (
+	aid NUMERIC NOT NULL,
+  code CHAR,
+  airline CHAR UNIQUE,
+  PRIMARY KEY (aid, airline)
+  
+)
+
+```
+
+##create airports table
+
+```{sql connection=my_awsDB}
+DROP TABLE IF EXISTS airports
+```
+
+```{sql connection=my_awsDB}
+CREATE TABLE airports (
+	pid NUMERIC NOT NULL,
+  code CHAR,
+  name CHAR UNIQUE,
+  city CHAR,
+  state CHAR,
+  country CHAR,
+  PRIMARY KEY (pid, name)
+)
+```
+
+##Create incidents table
+
+```{sql connection=my_awsDB}
+DROP TABLE IF EXISTS incidents
+```
+
+
+```{sql connection=my_awsDB}
+CREATE TABLE incidents (
+	iid NUMERIC NOT NULL,
+  flight_date DATE,
+  depPort CHAR,
+  arrPort CHAR,
+  airline CHAR,
+  aircraft CHAR,
+  flightPhase CHAR CONSTRAINT chk_flightPhase CHECK (flightPhase IN ('takeoff', 'landing', 'inflight', 'unknown')),
+  impact CHAR,
+  PRIMARY KEY (iid)
+)
+```
+
+##Set a foreign key constraint: FOREIGN KEY (depPort) REFERENCES airports (name)
+```{sql connection=my_awsDB}
+ALTER TABLE incidents ADD CONSTRAINT FOREIGN KEY (airline) REFERENCES airlines(airline);
+```
+##Set another FOREIGN KEY (airline) REFERENCES airlines (airline)
+```{sql connection=my_awsDB}
+ALTER TABLE incidents ADD CONSTRAINT FOREIGN KEY (depPort) REFERENCES airports(name);
+```
+
+## TASK 2. POPULATING TABLES WITH CSV DATA
+
+## STEP ONE: IMPORT THE CSV FILE BY USING sqldf()
+```{r}
+BIncident_df <- read.csv("BirdStrikesData.csv")
+BIncident_df <- na.omit(BIncident_df)
+
+BIncident_df$aid <- seq(from = 1, to = nrow(BIncident_df)) + 100
+BIncident_df
+```
+
+```{r}
+BIncident_df$FlightDate <- substring(BIncident_df$FlightDate, 1, 
+                                               nchar(BIncident_df$FlightDate)-5)
+
+
+BIncident_df$When..Phase.of.flight <- sub("Landing Roll", "landing", BIncident_df$When..Phase.of.flight)
+BIncident_df$When..Phase.of.flight <- sub("Take-off run", "takeoff", BIncident_df$When..Phase.of.flight)
+BIncident_df$When..Phase.of.flight <- sub("Climb", "inflight", 
+                                                 BIncident_df$When..Phase.of.flight)
+BIncident_df$When..Phase.of.flight <- sub("Descent", "inflight", 
+                                                 BIncident_df$When..Phase.of.flight)
+BIncident_df$When..Phase.of.flight <- sub("Approach", "inflight", 
+                                                 BIncident_df$When..Phase.of.flight)
+BIncident_df$When..Phase.of.flight <-  sub("Parked", "inflight", 
+                                                 BIncident_df$When..Phase.of.flight)
+BIncident_df$When..Phase.of.flight <-  sub("Taxi", "unknown", 
+                                                 BIncident_df$When..Phase.of.flight)
+BIncident_df$When..Phase.of.flight <-  sub("^$", "unknown", 
+                                                 BIncident_df$When..Phase.of.flight)
+BIncident_df
+```
+
+
+##Create dataframe for incidents table
+```{r}
+df.incidents <- data.frame(iid = BIncident_df$aid,
+                         flight_date = BIncident_df$FlightDate,
+                         depPort = BIncident_df$Airport..Name,
+                         arrPort = BIncident_df$Airport..Name,
+                         airline = BIncident_df$Aircraft..Airline.Operator,
+                         aircraft = BIncident_df$Aircraft..Make.Model,
+                         flightPhase = BIncident_df$When..Phase.of.flight,
+                         impact = BIncident_df$Effect..Indicated.Damage)
+df.incidents
+```
+##Create dataframe for airlines table
+```{r}
+library(sqldf)
+options(sqldf.driver = "SQLite")
+df.airlines <- sqldf::sqldf("SELECT 1 as aid, '' as code, 
+`Aircraft..Airline.Operator` as airlines from `BIncident_df` 
+WHERE airlines NOT LIKE '' group by airlines ")
+
+num_airines <- nrow(df.airlines)
+df.airlines[,1] <- seq(1, num_airines)
+df.airlines <- na.omit(df.airlines)
+df.airlines 
+```
+##Create dataframe for airports table
+```{r}
+df.airports <- sqldf::sqldf("SELECT 1 as pid, '' as code, 
+`Airport..Name` as name, '' as city, `Origin.State` as state, 'USA' as country from `BIncident_df`
+WHERE name NOT LIKE '' group by name")
+
+num_airports <- nrow(df.airports)
+df.airports[,1] <- seq(1, num_airports)
+df.airports <- na.omit(df.airports)
+df.airports
+```
+
+## BULK LOADING DATA TO EACH TABLE
+
+```{sql connection=my_awsDB}
+DELETE FROM incidents;
+```
+
+```{sql connection=my_awsDB}
+DELETE FROM airlines;
+```
+
+```{sql connection=my_awsDB}
+DELETE FROM airports;
+```
+
+
+```{r}
+dbWriteTable(my_awsDB, "incidents", df.incidents, overwrite = T, row.names =F)
+```
+
+```{r}
+dbWriteTable(my_awsDB, "airlines", df.airlines, overwrite = T, row.names =F)
+```
+
+```{r}
+dbWriteTable(my_awsDB, "airports", df.airports, overwrite = T, row.names =F)
+```
+
+
+##Question 3
+##Check wether incidents table is populated in my_awsDB
+```{sql connection=my_awsDB}
+select * from `incidents` limit 10;
+```
+
+##Check wether airlines table is populated in my_awsDB
+```{sql connection=my_awsDB}
+select * from `airlines` limit 10;
+```
+##Check wether airports table is populated in my_awsDB
+```{sql connection=my_awsDB}
+select * from `airports` limit 10;
+```
+## Question 4
+
+```{sql connection=my_awsDB}
+SELECT num_of_strikes, airline, arrPort, flightPhase from
+(SELECT count(iid) as num_of_strikes, airline, arrPort, flightPhase from incidents group by airline) AS A
+WHERE arrPort = "LAGUARDIA NY" group by airline;
+
+```
+
+
+## Question 5
+
+```{sql connection=my_awsDB}
+SELECT num_of_strikes as Top_Strikes, Airport, flightPhase from (SELECT COUNT(iid) as num_of_strikes, 
+depPort as Airport, flightPhase from incidents WHERE airline NOT LIKE
+"%BUSINESS%" or "%PRIVATE%"or "%MILITARY%" group by Airport) AS A
+ORDER BY Top_Strikes desc limit 1;
+```
+
+## Question 6
+```{sql connection=my_awsDB}
+SELECT Year, Total_Number_of_Strikes, Airport, Flights 
+FROM (SELECT depPort as Airport, airline as Flights, COUNT(iid) 
+AS Total_Number_of_Strikes, SUBSTRING(flight_date, length(flight_date)-3) AS Year
+FROM incidents group by Year) AS A
+WHERE Year = '2005' or Year = '2006' or Year = '2007' or Year = '2008'
+or Year = '2009' or Year = '2010' or Year = '2011';
+```
+
+
+
+##Question 7
+
+```{r}
+df <- dbReadTable(my_awsDB, "incidents")
+```
+
+```{r}
+library(sqldf)
+options(sqldf.driver = "SQLite")
+df <- sqldf("SELECT Year, Total_Number_of_Strikes, Airport, Flights 
+FROM (SELECT depPort as Airport, airline as Flights, COUNT(iid) 
+AS Total_Number_of_Strikes, SUBSTRING(flight_date, length(flight_date)-3) AS Year
+FROM df group by Year) AS A
+WHERE Year = '2005' or Year = '2006' or Year = '2007' or Year = '2008'
+or Year = '2009' or Year = '2010' or Year = '2011'")
+df
+```
+
+
+```{r}
+library(ggplot2)
+line_chart <- ggplot(df, aes(x=`Year`, y=`Total_Number_of_Strikes`, group = 1)) +
+geom_line() +
+labs(x = "Year", y = "Number of strikes") +
+ggtitle("Number of bird strikes happened by year") +
+geom_text(aes(label=`Total_Number_of_Strikes`, vjust= -0.5))
+line_chart
+```
+
+## Question 8 
+Created a stored procedure called DeleteIncidentByAirport with a given name of
+an airport same as depPort to delete rows that have matching quality.
+
+```{sql connection=my_awsDB}
+DROP PROCEDURE IF EXISTS DeleteIncidentByAirport;
+```
+
+```{sql connection=my_awsDB}
+CREATE PROCEDURE DeleteIncidentByAirport(
+ IN AirportName CHAR(255)
+)
+BEGIN 
+  DELETE FROM `incidents` 
+  WHERE depPort = AirportName;
+END
+```
+
+
+##Invoke the stored procedure named DeleteIncidentByAirport by using CALL
+```{sql connection=my_awsDB}
+CALL DeleteIncidentByAirport("LAGUARDIA NY")
+```
+
+##Test case result: first row and so on with airport name "LAGUARDIA NY" are
+##deleted as expected as iid 101 is no longer in the table incidents.
+```{sql connection=my_awsDB}
+SELECT * FROM `incidents`;
+```
+
+
+```{r}
+dbDisconnect(my_awsDB)
+```
+
+
