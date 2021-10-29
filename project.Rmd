@@ -1,0 +1,145 @@
+---
+title: "project"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(RColorBrewer)
+require(maps)
+require(viridis)
+library(knitr)
+library(forecast)
+library(gridExtra)
+library(MLmetrics)
+```
+
+```{r , warning=F, message=F}
+folder <- "D:\\MS DS\\DS 5110\\project\\Final project\\data\\"
+df<- read_csv(paste(folder,"us_state_vaccinations.csv",sep=""))
+globe_data <- read_csv(paste(folder,"country_vaccinations.csv",sep=""))
+
+
+
+data <- globe_data %>%
+  filter(iso_code == 'USA') %>%
+  filter(date <= '2021-03-30') %>%
+  select(c('date','people_vaccinated'))
+
+library(imputeTS)
+data$people_vaccinated <- na.interpolation(data$people_vaccinated,
+                                           option = "linear")
+
+
+
+test_data <- globe_data %>%
+  filter(iso_code == 'USA') %>%
+  filter(date > '2021-03-30') %>%
+  select(c('date','people_vaccinated'))
+
+data$date <- strptime(data$date, "%Y-%m-%d" )
+data$date <- as.POSIXct(data$date)
+data$people_vaccinated <- as.numeric(data$people_vaccinated)
+
+myts<- ts(data$people_vaccinated, frequency = 1,
+          start = as.Date('2020-12-20'), end = as.Date('2021-03-30'))
+
+my_df_ts <- data.frame(vaccination = myts, as.numeric(time(myts)))
+names(my_df_ts) <- c("vaccination", "time")
+
+
+
+# Then we can create a model using tslm
+# We can model using trend, season and random
+mymodel <- tslm(vaccination ~ trend,my_df_ts)
+
+# And forecast using this same model
+# We are going to predict the next 10 years
+# We can see the ascending trend
+test_fc <- forecast(mymodel,h=12)
+test_fc
+
+test_data$pred <- test_fc$mean
+
+
+RMSE(test_data$people_vaccinated, test_data$pred)
+
+my_fc <- forecast(mymodel, h=200)
+my_fc
+plot(my_fc)
+
+pop <- 331400000
+herd <- pop * 0.9
+
+
+num = 0
+for(i in 1:length(my_fc$mean)){
+  if (my_fc$mean[i] >= herd){
+    num = i
+    break
+  }
+}
+
+
+date <- as.Date('2021-04-11') 
+final <- date + num
+final = format(final, "%d,%B, %Y")
+print(paste("Herd Immunity can be achieved by ",
+            final, sep=""))
+```
+
+
+
+```{r}
+library(forecast)
+library(MLmetrics)
+
+training <- window(data$people_vaccinated)
+
+#90- train 10- test
+#rmse
+acf(training)
+pacf(training)
+
+arima_optimal = auto.arima(training)
+
+test_fc <- forecast(arima_optimal,h=12)
+
+test_data$pred <- test_fc$mean
+test_data
+RMSE(test_data$people_vaccinated, test_data$pred)
+
+my_fc <- forecast(arima_optimal, h = 200)
+plot(my_fc)
+
+pop <- 331400000
+herd <- pop * 0.9
+
+
+for(i in 1:length(my_fc$mean)){
+  if (my_fc$mean[i] >= herd){
+    num = i
+    break
+  }
+}
+
+
+arima_optimal
+
+# imputation
+# seasonality and trend
+# model working
+# p,d, q , arima 
+# sarima
+# tslm doesn't work for us!
+date <- as.Date('2021-04-11') 
+final <- date + num
+final = format(final, "%d,%B, %Y")
+print(paste("Herd Immunity can be achieved by ",
+            final, sep=""))
+```
