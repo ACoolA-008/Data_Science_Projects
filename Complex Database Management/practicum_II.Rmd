@@ -1,0 +1,939 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+#Embbed ERD Diagram for Part1
+```{r out.width="300px"}
+url <- "https://imgur.com/a/GbsqAqc"
+knitr::include_graphics(url)
+```
+
+<div style="width: 640px; height: 480px; margin: 10px; position: relative;"><iframe allowfullscreen frameborder="0" style="width:640px; height:480px" src="https://lucid.app/documents/embeddedchart/f3b60aca-ca3e-46bd-b8f7-88f4a31c5ccc" id="BH7A4gCUen6t"></iframe></div>
+
+
+#Creating Journal database
+```{r}
+library(RSQLite)
+
+fpath = "~/Desktop/NEU/5200DBMS/Database/"
+dbfile = "Journal.sqlitedb"
+jcon <- dbConnect(RSQLite::SQLite(), paste0(fpath, dbfile))
+```
+
+
+#Creating Tables in Journal.sqlitedb Database
+# 3 Tables are stored in this database
+# Articles
+# Journals
+# Authors
+
+# Special note in question 2, the publication date is equivalent to PubMedPubDate PubStatus="pubmed"
+
+
+```{sql connection=jcon}
+DROP TABLE IF EXISTS Articles
+```
+
+```{sql connection=jcon}
+CREATE TABLE Articles (
+	article_id NUMERIC NOT NULL,
+	journal_id NUMERIC NOT NULL,
+  article_title TEXT NOT NULL,
+  date_created DATE NOT NULL,
+  PRIMARY KEY (article_id),
+  CONSTRAINT journal_id_fk FOREIGN KEY (journal_id) REFERENCES Journals (journal_id)
+)
+```
+
+```{sql connection=jcon}
+DROP TABLE IF EXISTS Journals
+```
+
+#journal_pubDate(PubMedPubDate PubStatus="pubmed")
+```{sql connection=jcon}
+CREATE TABLE Journals (
+	journal_id NUMERIC NOT NULL,
+  journal_title TEXT NOT NULL,
+  volume NUMERIC NOT NULL,
+  issue NUMERIC NOT NULL,
+  pubDate DATE NOT NULL,
+  PRIMARY KEY (journal_id)
+)
+```
+
+```{sql connection=jcon}
+DROP TABLE IF EXISTS Authors
+```
+
+```{sql connection=jcon}
+CREATE TABLE Authors (
+	author_id NUMERIC NOT NULL,
+  foreName TEXT NOT NULL,
+  lastName TEXT NOT NULL,
+  initials TEXT NOT NULL,
+  affiliation TEXT NOT NULL,
+  PRIMARY KEY (author_id)
+)
+```
+
+
+```{r}
+dbListTables(jcon)
+```
+
+#Part 1: Loading Tables with data information from XML
+
+```{r}
+library(XML)
+
+library(RSQLite)
+library(DBI)
+library(knitr)
+
+
+path <- "~/Desktop/"
+fn <- "pubmed_sample.xml"
+fpn<- paste0(path, fn)
+
+xmlDOM <- xmlParse(file = fpn)
+```
+
+```{r}
+r <- xmlRoot(xmlDOM)
+numArticle<- xmlSize(r)
+numArticle
+
+```
+
+#Preparing values to enter the Author table
+```{r}
+fName_xpath <- '//PubmedArticle/MedlineCitation/Article/AuthorList/Author/ForeName'
+fNames <- xpathSApply(xmlDOM,fName_xpath, xmlValue)
+#fNames
+
+lName_xpath <- '//PubmedArticle/MedlineCitation/Article/AuthorList/Author/LastName'
+lNames <- xpathSApply(xmlDOM,lName_xpath, xmlValue)
+
+initial_xpath <- '//PubmedArticle/MedlineCitation/Article/AuthorList/Author/Initials'
+initial <- xpathSApply(xmlDOM,initial_xpath, xmlValue)
+
+affiliation_xpath <- '//PubmedArticle/MedlineCitation/Article/AuthorList/Author/Affiliation'
+affiliation <- xpathSApply(xmlDOM,affiliation_xpath, xmlValue)
+
+```
+
+#Creating a subset dataframe for authors who have affiliations called Author_with_affi.df
+#Loading data to Author_with_affi.df 
+```{r}
+Author_with_affi.df <- data.frame(Author_ForeName=character(),
+                                  Author_LastName=character(),
+                                  Author_Initial=character(),
+                                  Author_Affiliation=character(),
+                            stringsAsFactors = F)
+
+for (m in 1:length(affiliation)){
+
+fn <- fNames[m]
+ln <- lNames[m]
+ini <- initial[m]
+affi <- affiliation[m]
+
+Author_with_affi.df[m,1] <- fn
+Author_with_affi.df[m,2] <- ln
+Author_with_affi.df[m,3] <- ini
+Author_with_affi.df[m,4] <- affi
+}
+
+Author_with_affi.df
+
+```
+
+
+#Loading data to All_Author.df for all authors in the xml file
+#Generating author ids (no duplicated authors)
+```{r}
+All_Author.df <- data.frame(Author_ID=integer(),
+                            authorFN=character(),
+                      authorLN=character(),
+                      authorINI=character(),
+                      stringsAsFactors = F)
+
+for (m in 1:length(lName)){
+first_name <- fNames[m]
+last_name <- lNames[m]
+inital <- initial[m]
+
+All_Author.df[m,2] <- first_name
+All_Author.df[m,3] <- last_name
+All_Author.df[m,4] <- inital
+}
+All_Author.df <- All_Author.df[!duplicated(All_Author.df),]
+All_Author.df$Author_ID <- seq(from = 1, to = nrow(All_Author.df)) + 100
+All_Author.df
+```
+#Complete Author.df by joining All_Author.df and Author_with_affi.df
+```{r}
+Author.df <- merge(x=Author_with_affi.df, y=All_Author.df,
+                        by.x=c("Author_ForeName", "Author_LastName", "Author_Initial"),by.y=c("authorFN", "authorLN", "authorINI"),
+                        all.y=TRUE)
+Author.df 
+
+numAffiAuwAll <- nrow(Author.df)
+numAffiAuwAll
+
+numAffiAu <- sum(is.na(Author.df$Author_Affiliation))
+numAffiAu 
+
+Author.df <- subset(Author.df, select = c(5, 1, 2, 3, 4))
+Author.df
+```
+
+
+#Preparing values to enter the Journal table
+```{r}
+jID_xpath <- '//PubmedArticle/MedlineCitation/MedlineJournalInfo/NlmUniqueID'
+jID <- xpathSApply(xmlDOM,jID_xpath, xmlValue)
+#jID
+
+jTitle_xpath <- '//PubmedArticle/MedlineCitation/Article/Journal/Title'
+jTitle <- xpathSApply(xmlDOM,jTitle_xpath, xmlValue)
+#jTitle
+
+jVolume_xpath <- '//PubmedArticle/MedlineCitation/Article/Journal/JournalIssue/Volume'
+jVolume <- xpathSApply(xmlDOM,jVolume_xpath, xmlValue)
+#jVolume
+
+jIssue_xpath <- '//PubmedArticle/MedlineCitation/Article/Journal/JournalIssue/Issue'
+jIssue <- xpathSApply(xmlDOM,jIssue_xpath, xmlValue)
+#jIssue
+
+jDateYear_xpath <- "//PubmedArticle/PubmedData/History/PubMedPubDate[@PubStatus='medline']/Year"
+jDateYear<- xpathSApply(xmlDOM,jDateYear_xpath, xmlValue)
+#jDateYear
+
+jDateMonth_xpath <- "//PubmedArticle/PubmedData/History/PubMedPubDate[@PubStatus='medline']/Month"
+jDateMonth<- xpathSApply(xmlDOM,jDateMonth_xpath, xmlValue)
+#jDateMonth
+
+jDateDay_xpath <- "//PubmedArticle/PubmedData/History/PubMedPubDate[@PubStatus='medline']/Day"
+jDateDay<- xpathSApply(xmlDOM,jDateDay_xpath, xmlValue)
+#jDateDay
+```
+
+
+
+#Loading data for journal.df
+```{r}
+journal.df <- data.frame(Journal_ID=integer(),
+                         Journal_Title=character(),
+                         Journal_Volume=integer(),
+                         Journal_Issue=integer(),
+                         Journal_PubYear=integer(),
+                         Journal_PubMonth=integer(),
+                         Journal_PubDay=integer(),
+                         stringsAsFactors = F)
+
+for (m in 1:length(jID)){
+journal.df[m,1] <- jID[m]
+journal.df[m,2] <- jTitle[m]
+journal.df[m,3] <- jVolume[m]
+journal.df[m,4] <- jIssue[m]
+journal.df[m,5] <- jDateYear[m]
+journal.df[m,6] <- jDateMonth[m]
+journal.df[m,7] <- jDateDay[m]
+}
+
+#journal.df$Journal_PubDate <- as.Date(journal.df$Journal_PubDate)
+journal.df$Date <- paste(journal.df$Journal_PubYear, 
+                         journal.df$Journal_PubMonth, 
+                         journal.df$Journal_PubDay, 
+                         sep="-")
+#Convert to the correct data types
+journal.df$Journal_ID <- as.numeric(journal.df$Journal_ID)
+journal.df$Journal_Volume <- as.numeric(journal.df$Journal_Volume)
+journal.df$Journal_Issue <- as.numeric(journal.df$Journal_Issue)
+journal.df$Date <- as.Date(journal.df$Date, format="%Y-%m-%d")
+
+journal.df <- subset(journal.df, select = c(1,2,3,4,8))
+journal.df <- journal.df[!duplicated(journal.df),]
+journal.df
+```
+#Problem occurs due to automatic removal of leading zeros of the journal ID
+#Adding zeros to the journal_ID
+#2,3,6,9,10,16
+```{r}
+journal.df$Journal_ID[2] <- paste(0, journal.df$Journal_ID[2], sep = '')
+journal.df$Journal_ID[3] <- paste(0, journal.df$Journal_ID[3], sep = '')
+journal.df$Journal_ID[6] <- paste(0, journal.df$Journal_ID[6], sep = '')
+journal.df$Journal_ID[9] <- paste(0, journal.df$Journal_ID[9], sep = '')
+journal.df$Journal_ID[10] <- paste(0, journal.df$Journal_ID[10], sep = '')
+journal.df$Journal_ID[16] <- paste(0, journal.df$Journal_ID[16], sep = '')
+journal.df$Journal_ID[6] <- paste(0, journal.df$Journal_ID[6], sep = '')
+journal.df
+```
+
+
+#Preparing values to enter the Article table
+```{r}
+articleID_xpath <- "//PubmedArticle/PubmedData/ArticleIdList/ArticleId[@ IdType='pubmed']"
+articleID <- xpathSApply(xmlDOM,articleID_xpath, xmlValue)
+#articleID
+
+title_xpath <- '//PubmedArticle/MedlineCitation/Article/ArticleTitle'
+titles <- xpathSApply(xmlDOM,title_xpath, xmlValue)
+#titles
+
+dateCreatedYear_xpath <- "//PubmedArticle/MedlineCitation/DateCreated/Year"
+dateCreatedYear <- xpathSApply(xmlDOM,dateCreatedYear_xpath, xmlValue)
+#dateCreatedYear
+
+dateCreatedMonth_xpath <- "//PubmedArticle/MedlineCitation/DateCreated/Month"
+dateCreatedMonth <- xpathSApply(xmlDOM,dateCreatedMonth_xpath, xmlValue)
+#dateCreatedMonth
+
+dateCreatedDay_xpath <- "//PubmedArticle/MedlineCitation/DateCreated/Day"
+dateCreatedDay <- xpathSApply(xmlDOM,dateCreatedDay_xpath, xmlValue)
+#dateCreatedDay
+```
+
+#Loading data for article.df
+```{r}
+article_with_DaysInfo.df <- data.frame(Article_ID=integer(),
+                         Journal_ID=integer(),
+                         Article_Title=character(),
+                         Date_Year=integer(),
+                         Date_Month=integer(),
+                         Date_Day=integer(),
+                         stringsAsFactors = F)
+
+for (m in 1:length(jID)){
+article_with_DaysInfo.df[m,1] <- articleID[m]
+article_with_DaysInfo.df[m,2] <- jID[m]
+article_with_DaysInfo.df[m,3] <- titles[m]
+article_with_DaysInfo.df[m,4] <- dateCreatedYear[m]
+article_with_DaysInfo.df[m,5] <- dateCreatedMonth[m]
+article_with_DaysInfo.df[m,6] <- dateCreatedDay[m]
+}
+
+
+article_with_DaysInfo.df$Date_Created <- paste(article_with_DaysInfo.df$Date_Year, 
+                         article_with_DaysInfo.df$Date_Month, 
+                         article_with_DaysInfo.df$Date_Day, 
+                         sep="-")
+#Convert to the correct data types
+article_with_DaysInfo.df$Article_ID <- as.integer(article_with_DaysInfo.df$Article_ID)
+article_with_DaysInfo.df$Journal_ID <- as.integer(article_with_DaysInfo.df$Journal_ID)
+article_with_DaysInfo.df$Date_Created <- as.Date(article_with_DaysInfo.df$Date_Created, format="%Y-%m-%d")
+article_with_DaysInfo.df
+#article.df_with_DaysInfo.df for creating a Created_Day.df dimensional table later in part 2.
+#Now just focus on article.df
+article.df <- subset(article.df_with_DaysInfo.df, select = c(1,2,3,7))
+article.df
+```
+#Problem occurs due to automatic removal of leading zeros of the journal ID
+#Adding zeros to the journal_ID
+#2,3,6,9,10,16
+```{r}
+#article.df$Journal_ID[2] <- paste(0, article.df$Journal_ID[2], sep = '')
+#article.df$Journal_ID[3] <- paste(0, article.df$Journal_ID[3], sep = '')
+#article.df$Journal_ID[6] <- paste(0, article.df$Journal_ID[6], sep = '')
+#article.df$Journal_ID[9] <- paste(0, article.df$Journal_ID[9], sep = '')
+#article.df$Journal_ID[10] <- paste(0, article.df$Journal_ID[10], sep = '')
+#article.df$Journal_ID[16] <- paste(0, article.df$Journal_ID[16], sep = '')
+#article.df$Journal_ID[6] <- paste(0, article.df$Journal_ID[6], sep = '')
+#article.df
+```
+
+```{r}
+#article.df
+#journal.df
+#Author.df
+```
+#Populating tables in journal database
+```{r}
+dbWriteTable(jcon, "Articles", article.df, overwrite = T, row.names =F)
+```
+#Journals Table
+
+```{r}
+journal.df$Date <- as.character(journal.df$Date)
+#journal.df
+```
+
+```{r}
+dbWriteTable(jcon, "Journals", journal.df, overwrite = T, row.names =F)
+```
+#Authors Table
+```{r}
+dbWriteTable(jcon, "Authors", Author.df, overwrite = T, row.names =F)
+```
+#Show first 10 rows of the Articles Table
+```{sql connection=jcon}
+select * from Articles limit 10
+```
+#Show first 10 rows of the Authors Table
+```{sql connection=jcon}
+select * from Authors limit 10
+```
+
+
+#Show first 10 rows of the Journals Table
+```{sql connection=jcon}
+select * from Journals limit 10
+```
+
+
+#PART2. Create Star/Snowflake Schema
+
+
+#Embbed ERD Diagram for Part2
+```{r out.width="300px"}
+url <- "https://imgur.com/a/ofgnwuK"
+knitr::include_graphics(url)
+```
+
+<div style="width: 640px; height: 480px; margin: 10px; position: relative;"><iframe allowfullscreen frameborder="0" style="width:640px; height:480px" src="https://lucid.app/documents/embeddedchart/624b9f66-8f50-4472-b4a7-c26d913d6f69" id="cK7AYlGc0iQc"></iframe></div>
+
+
+
+#Step1: Creating Tables
+
+#Creating database tables for Journal_fact, Number_Article.dim, 
+#Publication_Date.dim, Created_Date.dim, and Days_Elapsed.dim
+
+#Fact Table
+```{sql connection=jcon}
+DROP TABLE IF EXISTS Journal_fact
+```
+
+```{sql connection=jcon}
+CREATE TABLE Journal_fact (
+	journal_id NUMERIC NOT NULL,
+	Pub_ID TEXT NOT NULL,
+	Created_ID TEXT NOT NULL,
+	ED_Key TEXT NOT NULL,
+	Date_Created TEXT NOT NULL,
+	Date_Published TEXT NOT NULL,
+	Quarter_Published TEXT NOT NULL,
+	Days_Elapsed NUMERIC NOT NULL,
+	AVG_ED_Q NUMERIC NOT NULL,
+	AVG_ED_Y NUMERIC NOT NULL,
+	Number_of_Articles NUMERIC NOT NULL,
+  PRIMARY KEY (journal_id,Pub_ID, Created_ID, ED_Key),
+  CONSTRAINT journal_id_fk FOREIGN KEY (journal_id) REFERENCES Number_Article_dim (Journal_ID),
+  CONSTRAINT pub_id_fk FOREIGN KEY (Pub_ID) REFERENCES Publication_Date_dim (Pub_ID),
+  CONSTRAINT created_id_fk FOREIGN KEY (Created_ID) REFERENCES Created_Date_dim (Created_ID),
+  CONSTRAINT ed_key_fk FOREIGN KEY (ED_Key) REFERENCES Days_Elapsed_dim (ED_Key)
+)
+```
+
+#Create Dimensional Table#1 Number_Article.dim
+```{sql connection=jcon}
+DROP TABLE IF EXISTS Number_Article_dim
+```
+
+```{sql connection=jcon}
+CREATE TABLE Number_Article_dim (
+	journal_id NUMERIC NOT NULL,
+	number_of_articles NUMERIC NOT NULL,
+  PRIMARY KEY (journal_id),
+  CONSTRAINT journal_id_fk FOREIGN KEY (journal_id) REFERENCES Journal_fact (journal_id)
+)
+```
+
+#Create Dimensional Table #2 Publication_Date.dim
+```{sql connection=jcon}
+DROP TABLE IF EXISTS Publication_Date_dim
+```
+
+```{sql connection=jcon}
+CREATE TABLE Publication_Date_dim(
+	Pub_ID TEXT NOT NULL,
+	Date_Published TEXT NOT NULL,
+	Year_Published TEXT NOT NULL,
+	Month_Published TEXT NOT NULL,
+	Day_Published TEXT NOT NULL,
+	Date_Published_in_Format TEXT NOT NULL,
+  PRIMARY KEY (Pub_ID),
+  CONSTRAINT pub_id_fk FOREIGN KEY (Pub_ID) REFERENCES Journal_fact (Pub_ID)
+)
+```
+
+#Create Dimensional Table#3 Created_Date.dim
+```{sql connection=jcon}
+DROP TABLE IF EXISTS Created_Date_dim
+```
+
+```{sql connection=jcon}
+CREATE TABLE Created_Date_dim(
+	Created_ID TEXT NOT NULL,
+	Date_Created_in_Format TEXT NOT NULL,
+	Year_Created TEXT NOT NULL,
+	Month_Created TEXT NOT NULL,
+	Day_Created TEXT NOT NULL,
+  PRIMARY KEY (Created_ID),
+  CONSTRAINT created_id_fk FOREIGN KEY (Created_ID) REFERENCES Journal_fact (Created_ID)
+)
+```
+
+#Create Dimensional Table#4 Days_Elapsed.dim
+```{sql connection=jcon}
+DROP TABLE IF EXISTS Days_Elapsed_dim
+```
+
+```{sql connection=jcon}
+CREATE TABLE Days_Elapsed_dim(
+	ED_Key TEXT NOT NULL,
+	Journal_ID NUMERIC NOT NULL,
+	Date_Created TEXT NOT NULL,
+	Date_Published TEXT NOT NULL,
+	Day_Elapsed TEXT NOT NULL,
+	Month_Published TEXT NOT NULL,
+	Quarter_Published TEXT NOT NULL,
+	Year_Published TEXT NOT NULL,
+  PRIMARY KEY (ED_Key, Journal_ID),
+  CONSTRAINT journal_id_fk FOREIGN KEY (Journal_ID) REFERENCES Journal_fact (journal_id),
+  CONSTRAINT ED_Key_fk FOREIGN KEY (ED_Key) REFERENCES Journal_fact (ED_Key)
+)
+```
+
+
+```{r}
+dbListTables(jcon)
+```
+
+
+#Step2: Populating dataframes
+
+#Create a dataframe named numArti.df
+```{r}
+#Creating numArti_with_duplicated_jID.df first.
+journalID <- jID
+numArti_with_duplicated_jID.df <- data.frame(Journal_ID=integer(),
+                         Number_of_Articles=integer(),
+                         stringsAsFactors = F)
+for (i in 1:19) {
+anArticle <- r[[i]]
+article_value <- length(xmlValue(anArticle[[1]][[5]][[2]]))
+
+numArti_with_duplicated_jID.df[i,1] <- journalID[i]
+numArti_with_duplicated_jID.df[i,2] <- article_value
+}
+
+#Dealing with duplicated journal ID and named the new df as numArti.df
+numArti.df <- aggregate(numArti_with_duplicated_jID.df$Number_of_Articles, by=list(numArti_with_duplicated_jID.df$Journal_ID), FUN=sum)
+colnames(numArti.df) <- c("Journal_ID", "Number_of_Articles")
+numArti.df 
+```
+
+#Create a dataframe named pubDate.df(for dimensional table) to store
+#Pupblication Date information only
+
+#Extracting pubDate data
+```{r}
+library(stringr)
+pubDate_xpath <- "//PubmedArticle/MedlineCitation/Article/Journal/JournalIssue/PubDate"
+pubDate <- xpathSApply(xmlDOM,pubDate_xpath, xmlValue)
+pubDate <- str_replace_all(pubDate, fixed(" "), "")
+pubDate
+```
+
+#substring pubDate into YYYY-MM-DD format
+#  types of formats that are recognized
+#Format1.Ending with number, eg. 2012Feb1
+#Format2. Contains YYYYMMM-MMM, eg. 2013Mar-Apr
+#Format3. Regular format eg. 2012Jul
+
+
+#Extracting Days for pubDate that has date entries.
+```{r}
+#We shall ignore index number 12 since it's a year data entry
+index_of_format1 <- grep("[0-9]+$", pubDate)
+index_of_format1
+value_of_format1 <- pubDate[index_of_format1]
+value_of_format1 <- substring(value_of_format1, 8)
+value_of_format1
+```
+
+
+
+#Taking only the latter month abbreviation for datas that have YYYYMMM-MMM formats
+```{r}
+index_of_format2 <- which(nchar(pubDate)==11)
+index_of_format2
+value_of_format2 <- pubDate[index_of_format2]
+trimmed_value_of_format2 <- substr(value_of_format2, 9,11)
+trimmed_value_of_format2
+length(trimmed_value_of_format2)
+```
+
+
+
+```{r}
+library(lubridate)
+Year <- as.integer(substr(pubDate, 1,4))
+Month <- substr(pubDate_without_space, 5,7)
+#Replace values for special index 2,4,13,18
+Month[2] <- trimmed_value_of_format2[1]
+Month[4] <- trimmed_value_of_format2[2]
+Month[13] <- trimmed_value_of_format2[3]
+Month[18] <- trimmed_value_of_format2[4]
+
+#Convert Month Names to Month in Numeric Forms
+nMonth <- as.integer(match(Month,month.abb))
+
+#Creating Pub_ID
+Pub_ID <- seq(from = 1, to = length(pubDate)) + 100
+Pub_ID <- paste("Pub_ID", Pub_ID, sep = '')
+
+pubDate.df <- data.frame(Pub_ID=numeric(),
+                         Journal_ID=numeric(),
+                                  Date_Published=character(),
+                                  Year_Published=integer(),
+                                  Month_Published=integer(),
+                                  Day_Published=integer(),
+                                  stringsAsFactors = F)
+for (i in 1:19) {
+pubDate.df [i,1] <- Pub_ID[i]
+pubDate.df [i,2] <- jID[i]
+pubDate.df [i,3] <- pubDate[i]
+pubDate.df[i,4] <- Year[i]
+pubDate.df[i,5] <- nMonth[i]
+pubDate.df[i,6] <- 31
+}
+pubDate.df
+
+#Preparing Days values
+pubDate.df$Day_Published <- days_in_month(nMonth)
+pubDate.df$Day_Published[15] <- value_of_format1[2]
+pubDate.df$Day_Published [16] <- value_of_format1[3]
+pubDate.df$Day_Published [19] <- value_of_format1[4]
+pubDate.df$Day_Published <- as.integer(pubDate.df$Day_Published)
+
+
+#Replacing missing values in 12th row with December and 31 days
+pubDate.df$Month_Published[12] <- as.integer(12)
+pubDate.df$Day_Published[12] <- 31
+pubDate.df
+
+
+#Creating date in formats
+pubDate.df$Date_Published_in_Format <- paste(pubDate.df$Year_Published, 
+                                             pubDate.df$Month_Published,
+                                             pubDate.df$Day_Published,
+                                             sep="-")
+
+pubDate.df$Date_Published_in_Format <- as.Date(pubDate.df$Date_Published_in_Format, format="%Y-%m-%d")
+pubDate.df <- subset(pubDate.df, select = c(1,2,7,3,4,5,6))
+pubDate.df
+```
+
+#Creating createdDate.df
+```{r}
+createdDate.df <- subset(article_with_DaysInfo.df, select = c(7, 2, 4,5,6))
+colnames(createdDate.df) <- c("Date_Created_in_Format", "Journal_ID", "Date_Year", "Date_Month", "Date_Day")
+createdDate.df$Created_ID <- seq(from = 1, to = nrow(createdDate.df)) + 100
+createdDate.df$Created_ID <- paste("C_ID", createdDate.df$Created_ID, sep = '')
+
+#Converting Formats
+createdDate.df$Date_Year <- as.integer(createdDate.df$Date_Year)
+createdDate.df$Date_Month <- as.integer(createdDate.df$Date_Month)
+createdDate.df$Date_Day <- as.integer(createdDate.df$Date_Day)
+
+createdDate.df <- subset(createdDate.df, select = c(6,2,1,3,4,5))
+createdDate.df
+```
+
+#Creating days_elapsed.df
+```{r}
+days_elapsed.df <- data.frame(ED_Key=character(),
+                              Journal_ID=numeric(),
+                              Date_Created=character(),
+                              Date_Published=character(),
+                              Days_Elapsed=integer(),
+                              stringsAsFactors = F)
+
+dCreated <- article_with_DaysInfo.df$Date_Created
+dPublished <- pubDate.df$Date_Published_in_Format
+nElapsed <- difftime(dPublished, dCreated)
+edKey <- seq(from = 1, to = length(dCreated)) + 100
+edKey <- paste("ED", edKey, sep = '')
+
+for (i in 1:length(dCreated)) {
+  days_elapsed.df[i,1] <- edKey[i]
+  days_elapsed.df[i,2] <- jID[i]
+  days_elapsed.df[i,3] <- format(dCreated[i], "%Y-%m-%d")
+  days_elapsed.df[i,4] <- format(dPublished[i], "%Y-%m-%d")
+  days_elapsed.df[i,5] <- nElapsed[i]
+}
+#Converting data into correct data types
+days_elapsed.df$Journal_ID <- as.integer(days_elapsed.df$Journal_ID)
+days_elapsed.df$Date_Created <- as.Date(days_elapsed.df$Date_Created)
+days_elapsed.df$Date_Published <- as.Date(days_elapsed.df$Date_Published)
+days_elapsed.df
+```
+#Index 1 value turns to be negative, need to find a legit value to replace 
+#Date_Created with PubMedPubDate PubStatus="received" in History Node 1
+
+```{r}
+Replaced_Year_xpath <- "//PubmedArticle/PubmedData/History/PubMedPubDate[@PubStatus='received']/Year"
+Replaced_Year <- xpathSApply(xmlDOM,Replaced_Year_xpath, xmlValue)
+#Replaced_Year
+
+Replaced_Month_xpath <- "//PubmedArticle/PubmedData/History/PubMedPubDate[@PubStatus='received']/Month"
+Replaced_Month <- xpathSApply(xmlDOM,Replaced_Month_xpath, xmlValue)
+#Replaced_Month
+
+Replaced_Day_xpath <- "//PubmedArticle/PubmedData/History/PubMedPubDate[@PubStatus='received']/Day"
+Replaced_Day <- xpathSApply(xmlDOM,Replaced_Day_xpath, xmlValue)
+#Replaced_Day
+
+Replaced_Date <- paste(Replaced_Year[1],
+                       Replaced_Month[1],
+                       Replaced_Day[1], 
+                         sep="-")
+days_elapsed.df$Date_Created[1] <- Replaced_Date
+days_elapsed.df$Days_Elapsed[1] <- difftime(days_elapsed.df$Date_Published[1], days_elapsed.df$Date_Created[1])
+
+days_elapsed.df$Date_Created[1] <- as.Date(days_elapsed.df$Date_Created[1], format="%Y-%m-%d")
+
+#Adding the leading zeros to the Journal_ID 
+days_elapsed.df$Journal_ID[2] <- paste(0, days_elapsed.df$Journal_ID[2], sep = '')
+days_elapsed.df$Journal_ID[3] <- paste(0, days_elapsed.df$Journal_ID[3], sep = '')
+days_elapsed.df$Journal_ID[6] <- paste(0, days_elapsed.df$Journal_ID[6], sep = '')
+days_elapsed.df$Journal_ID[9] <- paste(0, days_elapsed.df$Journal_ID[9], sep = '')
+days_elapsed.df$Journal_ID[10] <- paste(0, days_elapsed.df$Journal_ID[10], sep = '')
+days_elapsed.df$Journal_ID[16] <- paste(0, days_elapsed.df$Journal_ID[16], sep = '')
+days_elapsed.df$Journal_ID[6] <- paste(0, days_elapsed.df$Journal_ID[6], sep = '')
+days_elapsed.df
+
+```
+
+```{r}
+library(dplyr)
+library(lubridate)
+library(zoo)
+#days_elapsed.df[order(days_elapsed.df$Date_Published),]
+
+#days_elapsed.df <- days_elapsed.df %>% group_by(Month_Published=floor_date(days_elapsed.df$Date_Published, "month"))
+#days_elapsed.df
+days_elapsed.df$Month_Published <- as.integer(substr(days_elapsed.df$Date_Published, 6,7))
+days_elapsed.df$Quarter_Published <- quarters(days_elapsed.df$Date_Published)
+days_elapsed.df$Year_Published <- as.integer(substr(days_elapsed.df$Date_Published, 1,4))
+#days_elapsed.df <- group_by(days_elapsed.df$Month_Published)
+days_elapsed.df
+```
+#Creating dataframes for Yearly and Quarterly Average Elapsed Days
+
+```{r}
+Yearly_ED.df <- aggregate(days_elapsed.df$Days_Elapsed, list(days_elapsed.df$Year_Published), FUN=mean)
+colnames(Yearly_ED.df) <- c("Year", "Y_AVG_ED")
+Yearly_ED.df
+Quarterly_ED.df <- aggregate(days_elapsed.df$Days_Elapsed, list(days_elapsed.df$Quarter_Published), FUN=mean)
+colnames(Quarterly_ED.df) <- c("Quarter", "Q_AVG_ED")
+Quarterly_ED.df
+```
+#Merging days_elapsed.df with numArti.df, Yearly_ED.df, and Yearly_ED.df to 
+#form the journal_fact.df
+```{r}
+journal_fact.df <- days_elapsed.df
+journal_fact.df$Pub_ID <- pubDate.df$Pub_ID
+journal_fact.df$Created_ID <- createdDate.df$Created_ID
+journal_fact.df$ED_Key <- days_elapsed.df$ED_Key
+```
+
+
+```{r}
+journal_fact.df <- merge(x=journal_fact.df, y=Yearly_ED.df,
+                        by.x="Year_Published",by.y="Year",
+                        all.y=TRUE)
+journal_fact.df <- merge(x=journal_fact.df, y=Quarterly_ED.df,
+                        by.x="Quarter_Published",by.y="Quarter",
+                        all.y=TRUE)
+journal_fact.df <- merge(x=journal_fact.df, y=numArti.df,
+                       by.x="Journal_ID",
+                      all.x=TRUE)
+#journal_fact.df <- merge(x=journal_fact.df, y=pubDate.df,
+#                        by.x="Journal_ID",by.y="Journal_ID",
+#                       all.y=TRUE)
+
+
+journal_fact.df <- subset(journal_fact.df, select=c(1,9,10,4,5,6,2,7,12,11,13))
+
+#Change date type to character so journal_fact.df is ready to be 
+#loaded into Star Schema with date in readable format.
+journal_fact.df$Date_Created <- as.character(journal_fact.df$Date_Created)
+journal_fact.df$Date_Published <- as.character(journal_fact.df$Date_Published)
+journal_fact.df
+```
+#Change a few dates into character types so the tables in the star schema has 
+#readable dates values instead of 5-digit values.
+```{r}
+#for Journal_fact, journal_fact.df is ready
+
+#for Days_Elapsed.dim
+days_elapsed_for_Star.df <- days_elapsed.df
+days_elapsed_for_Star.df$Date_Created <- as.character(days_elapsed_for_Star.df$Date_Created)
+days_elapsed_for_Star.df$Date_Published <- as.character(days_elapsed_for_Star.df$Date_Published)
+
+#for Created_Date.dim
+createdDate_for_Star.df <- createdDate.df
+createdDate_for_Star.df$Date_Created_in_Format <-as.character(createdDate_for_Star.df$Date_Created_in_Format)
+
+#Adding the leading zeros to the Journal_ID 
+createdDate_for_Star.df$Journal_ID[2] <- paste(0, createdDate_for_Star.df$Journal_ID[2], sep = '')
+createdDate_for_Star.df$Journal_ID[3] <- paste(0, createdDate_for_Star.df$Journal_ID[3], sep = '')
+createdDate_for_Star.df$Journal_ID[6] <- paste(0, createdDate_for_Star.df$Journal_ID[6], sep = '')
+createdDate_for_Star.df$Journal_ID[9] <- paste(0, createdDate_for_Star.df$Journal_ID[9], sep = '')
+createdDate_for_Star.df$Journal_ID[10] <- paste(0, createdDate_for_Star.df$Journal_ID[10], sep = '')
+createdDate_for_Star.df$Journal_ID[16] <- paste(0, createdDate_for_Star.df$Journal_ID[16], sep = '')
+createdDate_for_Star.df$Journal_ID[6] <- paste(0, createdDate_for_Star.df$Journal_ID[6], sep = '')
+createdDate_for_Star.df
+
+#for Publication_Date.dim
+pubDate_for_Star.df <- pubDate.df
+pubDate_for_Star.df$Date_Published_in_Format <-as.character(pubDate_for_Star.df$Date_Published_in_Format)
+
+```
+
+
+#Populating the dimensional model for journal.db
+```{r}
+#Write Journal_fact
+dbWriteTable(jcon, "Journal_fact",journal_fact.df, overwrite = T, row.names =F)
+
+#Write Number_Article_dim
+dbWriteTable(jcon, "Number_Article_dim", numArti.df, overwrite = T, row.names =F)
+
+#Write Publication_Date_dim
+dbWriteTable(jcon, "Publication_Date_dim", pubDate_for_Star.df, overwrite = T, row.names =F)
+
+#Write Created_Date_dim
+dbWriteTable(jcon, "Created_Date_dim", createdDate_for_Star.df, overwrite = T, row.names =F)
+
+#Write Days_Elapsed_dim
+dbWriteTable(jcon, "Days_Elapsed_dim", days_elapsed_for_Star.df, overwrite = T, row.names =F)
+```
+
+#Show first 10 rows of the Journal_fact Table
+```{sql connection=jcon}
+select * from Journal_fact
+```
+#Show first 10 rows of the Number_Article_dim Table
+```{sql connection=jcon}
+select * from Number_Article_dim limit 10
+```
+#Show first 10 rows of the Publication_Date_dim Table
+```{sql connection=jcon}
+select * from Publication_Date_dim limit 10
+```
+
+#Show first 10 rows of the Created_Date_dim Table
+```{sql connection=jcon}
+select * from Created_Date_dim limit 10
+```
+
+#Show first 10 rows of the Days_Elapsed_dim Table
+```{sql connection=jcon}
+select * from Days_Elapsed_dim limit 10
+```
+#Part3
+#Adjusting the Journal_fact table
+#Reason: 2 obvious outliers found in the Days_Elapsed column which should be 
+#avoided in order to explore the pattern without getting biased.
+
+#First: Adjust the journal_fact.df first 
+```{r}
+journal_fact.df_without_outliers <- subset(journal_fact.df, Days_Elapsed != 1 & 
+                                   Days_Elapsed != 355)
+journal_fact.df_without_outliers
+```
+#Second: adjusting average days_elapsed for values 1 and 355 in Q1 and Q3
+```{r}
+new_Quarterly_ED.df <- aggregate(journal_fact.df_without_outliers$Days_Elapsed, 
+                                 list(journal_fact.df_without_outliers$Quarter_Published), 
+                                 FUN=mean)
+colnames(new_Quarterly_ED.df) <- c("Quarter", "Q_AVG_ED")
+new_Quarterly_ED.df
+```
+
+
+
+#Delete the rows in Journal_fact table that has Days_Elapsed values equivalent
+#to 1 and 355
+```{sql connection=jcon}
+DELETE FROM Journal_fact
+WHERE
+Days_Elapsed=1 
+OR
+Days_Elapsed=355;
+```
+
+
+#Adjust Average values for 1 and 355's matching quarters Q1 and Q4 
+#in the Journal_fact table with Q1=36.00, Q4=52.75 in days_elapsed
+```{sql connection=jcon}
+UPDATE Journal_fact
+SET Q_AVG_ED=36.00 WHERE Quarter_Published="Q1"
+```
+
+#SET Q_AVG_ED=52.75 WHERE Quarter_Published="Q4"
+```{sql connection=jcon}
+UPDATE Journal_fact
+SET Q_AVG_ED=52.75 WHERE Quarter_Published="Q4"
+```
+
+
+```{sql connection=jcon}
+SELECT * FROM Journal_fact
+```
+
+
+#Exploring Pattern
+```{sql connection=jcon}
+SELECT Quarter_Published, count(Pub_ID) AS Numbers_of_Publications FROM Journal_fact
+GROUP BY Quarter_Published
+```
+#Line graph that demonstrates a pattern
+#Number of publications incerases in Q2 and Q3 during summer and fall season
+#whereas
+#Number of publication decreases from Q4 to Q1 in winter time and early spring
+
+#I would expect that a better pattern could be found if the publication date 
+#and the created date of the journal are defined more specifically and more clearly 
+#at the time when the date data was collected in the first place
+```{r}
+library(ggplot2)
+new_Quarterly_ED.df$Q_AVG_ED <- round(new_Quarterly_ED.df$Q_AVG_ED, 2)
+
+line_chart <- ggplot(new_Quarterly_ED.df, aes(x=`Quarter`, y=`Q_AVG_ED`, group = 1)) +
+geom_line() +
+labs(x = "Quarter_Published", y = "Average_Days_Elapsed") +
+ggtitle("Number of Publications by Quarter") +
+geom_text(aes(label=`Q_AVG_ED`, vjust= -0.5))
+line_chart
+```
+
+
+#Showing the original line-graph that actually looks like a pattern is shown 
+#however it's the one that I felt not comfortale drawing conclusion with
+#due to the outliers
+```{r}
+library(ggplot2)
+journal_fact.df$Q_AVG_ED <- round(journal_fact.df$Q_AVG_ED, 2)
+
+line_chart <- ggplot(journal_fact.df, aes(x=`Quarter_Published`, y=`Q_AVG_ED`, group = 1)) +
+geom_line() +
+labs(x = "Quarter_Published", y = "Average_Days_Elapsed") +
+ggtitle("Number of Publications by Quarter") +
+geom_text(aes(label=`Q_AVG_ED`, vjust= -0.5))
+line_chart
+```
+
+
+
+```{r}
+dbDisconnect(jcon)
+```
