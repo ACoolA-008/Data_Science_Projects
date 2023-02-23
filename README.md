@@ -17,7 +17,8 @@
   
 * Database Management:
   -- Tools: SQLite, DBI, Knitr, XML Processing, SQL, Cloud Database
-  Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Complex%20Database%20Management/practicum_II.Rmd
+  Link 1: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Complex%20Database%20Management/Practicum_I_awsDB_final.Rmd
+  Link 2: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Complex%20Database%20Management/practicum_II.Rmd
   
 
 
