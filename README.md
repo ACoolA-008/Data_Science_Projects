@@ -14,5 +14,10 @@
 * Mapping Data into Geographical Regions:
   -- Tools: ggplot2
   Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Mapping%20Data%20into%20Geographical%20Regions/air_quality_usa.pdf
+  
+* Database Management:
+  -- Tools: SQLite, DBI, Knitr, XML Processing, SQL, Cloud Database
+  Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Complex%20Database%20Management/practicum_II.Rmd
+  
 
 
