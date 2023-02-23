@@ -7,11 +7,11 @@
   Link: https://github.com/ACoolA-008/CS6220Data_Mining/blob/main/Supply%20Chain%20Project/CS%206220%20Final%20Project%20Report.pdf
   
 * Weather Analysis:
-  -- Techniques: Data preprocessing, data normalization, PCA Analysis, mutual information regression, linear regression, evaluation metrics, data            visualization with Plotly and matplotlib.
+  -- Techniques: Data preprocessing, data normalization, PCA Analysis, mutual information regression, linear regression, evaluation metrics, data            visualization with Plotly and matplotlib. \
   Link: https://github.com/ACoolA-008/CS6220Data_Mining/tree/main/H5
   
 * Deep Neural Networks:
-  -- Techniques: Convolutional Neural Networks, DNN, image classification, ROC/AUC curves, epoch training, evaluation metrics
+  -- Techniques: Convolutional Neural Networks, DNN, image classification, ROC/AUC curves, epoch training, evaluation metrics \
   Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Convolutional%20Neural%20Network.ipynb
   
   
@@ -30,7 +30,7 @@
   1. UML diagram
   ![Screen Shot 2023-02-22 at 9 04 22 PM](https://user-images.githubusercontent.com/71044804/220825198-0974d9ce-0caa-4072-8499-d79bd5598c13.png)
 
-  2. Crow's Foot ERD 3NF
+  2. Crow's Foot ERD 3NF:
   Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Database%20Design%20and%20Modeling/Crow's%20Foot%20ERD%20%203NF.pdf
 
   
@@ -40,7 +40,7 @@
   Link: https://github.com/ACoolA-008/Policy_Projects/blob/main/BIS%20490%20D%20Portfolio.pdf
   
  * What Happens When a Robot Commits Crimes
-  -- Issues: Legal sovereignty, criminal motivation, cyber crimes
+  -- Issues: Legal sovereignty, criminal motivation, cyber crimes \
   Link: https://github.com/ACoolA-008/Policy_Projects/blob/main/What%20Happens%20When%20a%20Robot%20Commits%20Crimes.pdf
   
   
