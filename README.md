@@ -7,8 +7,13 @@
   Link: https://github.com/ACoolA-008/CS6220Data_Mining/blob/main/Supply%20Chain%20Project/CS%206220%20Final%20Project%20Report.pdf
   
 * Weather Analysis:
-  -- Techniques: Data preprocessing, data normalization, PCA Analysis, mutual information regression, linear regression, evaluation metrics, data       visualization with Plotly and matplotlib.
+  -- Techniques: Data preprocessing, data normalization, PCA Analysis, mutual information regression, linear regression, evaluation metrics, data            visualization with Plotly and matplotlib.
   Link: https://github.com/ACoolA-008/CS6220Data_Mining/tree/main/H5
+  
+* Deep Neural Networks:
+  -- Techniques: Convolutional Neural Networks, DNN, image classification, ROC/AUC curves, epoch training, evaluation metrics
+  Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Convolutional%20Neural%20Network.ipynb
+  
   
 # R Projects
 * Mapping Data into Geographical Regions:
