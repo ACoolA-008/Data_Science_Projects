@@ -33,6 +33,12 @@
   2. Crow's Foot ERD 3NF:
   Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Database%20Design%20and%20Modeling/Crow's%20Foot%20ERD%20%203NF.pdf
 
+* Dashboard:\
+  -- Tableau: \
+  1. Airbnb
+  ![Airbnb](https://user-images.githubusercontent.com/71044804/223913873-9eb32781-6266-432b-9bab-8d1f959069c1.png)
+  2. Netflix
+  ![Netflix](https://user-images.githubusercontent.com/71044804/223913924-f20e6e24-0927-41a0-8545-66eebf56361f.png)
   
  # Policy Research Projects
  * 2019 Washington State Legislative Seminar Final Portfolio \
