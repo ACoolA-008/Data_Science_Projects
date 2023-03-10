@@ -14,7 +14,7 @@
   -- Techniques: Convolutional Neural Networks, DNN, image classification, ROC/AUC curves, epoch training, evaluation metrics \
   Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Convolutional%20Neural%20Network.ipynb
  
-# Data Visualizations: \
+# Data Visualizations: 
 * Tableau Dashboard:
   1. HR Attrition Analytics
   ![HR Analytics Dashboard](https://user-images.githubusercontent.com/71044804/224218903-c76a6d44-c96c-4fb5-a5b1-f444dd02dc07.png)
