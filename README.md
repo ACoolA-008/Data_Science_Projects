@@ -13,7 +13,15 @@
 * Deep Neural Networks: \
   -- Techniques: Convolutional Neural Networks, DNN, image classification, ROC/AUC curves, epoch training, evaluation metrics \
   Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Convolutional%20Neural%20Network.ipynb
-  
+ 
+# Data Visualizations: \
+* Tableau Dashboard:
+  1. HR Attrition Analytics
+  ![HR Analytics Dashboard](https://user-images.githubusercontent.com/71044804/224218903-c76a6d44-c96c-4fb5-a5b1-f444dd02dc07.png)
+  2. Airbnb
+  ![Airbnb](https://user-images.githubusercontent.com/71044804/223913873-9eb32781-6266-432b-9bab-8d1f959069c1.png)
+  3. Netflix
+  ![Netflix](https://user-images.githubusercontent.com/71044804/223913924-f20e6e24-0927-41a0-8545-66eebf56361f.png)
   
 # R Projects
 * Mapping Data into Geographical Regions:\
@@ -32,13 +40,6 @@
 
   2. Crow's Foot ERD 3NF:
   Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Database%20Design%20and%20Modeling/Crow's%20Foot%20ERD%20%203NF.pdf
-  
-# Data Visualizations
-* Tableau Dashboard:
-  1. Airbnb
-  ![Airbnb](https://user-images.githubusercontent.com/71044804/223913873-9eb32781-6266-432b-9bab-8d1f959069c1.png)
-  2. Netflix
-  ![Netflix](https://user-images.githubusercontent.com/71044804/223913924-f20e6e24-0927-41a0-8545-66eebf56361f.png)
   
  # Policy Research Projects
  * 2019 Washington State Legislative Seminar Final Portfolio \
