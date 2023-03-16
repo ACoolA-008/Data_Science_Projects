@@ -1,5 +1,14 @@
 # Data_Science_Projects
 
+# Healthcare Projects
+* Retinal OCT Image Classification with CNN
+  -- Dataset from Kaggle: https://www.kaggle.com/datasets/paultimothymooney/kermany2018
+  -- Framework: PyTorch
+  <img width="766" alt="Screen Shot 2023-03-16 at 10 08 29 AM" src="https://user-images.githubusercontent.com/71044804/225700476-a272d61d-db98-4ad7-a582-1f747a0da04c.png">
+  -- Accuracy: 
+  Test Dataset - Accuracy: 82.54%, Loss: 0.0037%
+  Valid Dataset - Accuracy: 81.25%, Loss: 0.0149%
+
 
 # Python Projects
 * DataCo Supply Chain Company Data Analysis and Docker Web Application: \
