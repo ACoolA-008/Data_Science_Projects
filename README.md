@@ -51,15 +51,24 @@
   2. Crow's Foot ERD 3NF:
   Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Database%20Design%20and%20Modeling/Crow's%20Foot%20ERD%20%203NF.pdf
   
- # Data Science Papers Reading List (Completed)
- * An experimental study of speech emotion recognition based on deep convolutional neural networks
-   W. Q. ZhengJ. S. YuY. X. Zou
-   2015 International Conference on Affective Computing and Intelligent Interaction, ACII 2015 (2015)
-   Link: https://www.mendeley.com/catalogue/3b8b776a-e572-3455-a3d1-e6748b64bbea/
- * Pass Receiver Prediction in Soccer using Video and Players’ Trajectories Yutaro Honda, 
-   Rei Kawakami, Ryota Yoshihashi, Kenta Kato, Takeshi Naemura 
-   2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW)
-   Link: https://ieeexplore.ieee.org/document/9857310
+# Data Science Papers Reading List (Completed)
+## Computer Vision and Deep Learning Models
+* An experimental study of speech emotion recognition based on deep convolutional neural networks
+ W. Q. ZhengJ. S. YuY. X. Zou
+ 2015 International Conference on Affective Computing and Intelligent Interaction, ACII 2015 (2015)
+ Link: https://www.mendeley.com/catalogue/3b8b776a-e572-3455-a3d1-e6748b64bbea/
+* Pass Receiver Prediction in Soccer using Video and Players’ Trajectories Yutaro Honda, 
+ Rei Kawakami, Ryota Yoshihashi, Kenta Kato, Takeshi Naemura 
+ 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW)
+ Link: https://ieeexplore.ieee.org/document/9857310
+## Privacy-Preserving Maching Learning
+* Privacy-Preserving Machine Learning: Threats and Solutions
+  Mohammad Al-RubaieJ. Morris Chang
+  IEEE Security and Privacy (2019)
+  Link: https://www.mendeley.com/catalogue/d4a25ffc-c7ca-3eb1-82aa-4f813bf596c2/
+  My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-1-e5091beb7c14
+
+
   
   
 
