@@ -64,8 +64,8 @@
 ## Privacy-Preserving Maching Learning
 * Privacy-Preserving Machine Learning: Threats and Solutions
   Mohammad Al-RubaieJ. Morris Chang
-  IEEE Security and Privacy (2019)
-  Link: https://www.mendeley.com/catalogue/d4a25ffc-c7ca-3eb1-82aa-4f813bf596c2/
+  IEEE Security and Privacy (2019) \
+  Link: https://www.mendeley.com/catalogue/d4a25ffc-c7ca-3eb1-82aa-4f813bf596c2/ \
   My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-1-e5091beb7c14
 
 
