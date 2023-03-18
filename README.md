@@ -79,6 +79,22 @@
   Link: https://www.mendeley.com/catalogue/d13cfde8-0c2c-33d0-b43a-f82c3ca1b68c/ \
   My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-3-76e9040748f6 \
   // NOTES DETAILS TO BE ADDED
+* Updates-leak: Data set inference and reconstruction attacks in online learning
+  Ahmed Salem, Apratim Bhattacharya, Michael Backes, Mario Fritz, and Yang Zhang
+  Proceedings of the 29th USENIX Security Symposium (2020) \
+  Link: https://www.mendeley.com/catalogue/b8ecf34d-a2b4-3530-b5f5-da8138bf3d7d/ \
+  My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-4-e53198d89974 \
+  // NOTES DETAILS TO BE ADDED
+* Model inversion attacks that exploit confidence information and basic countermeasures
+  Matt FredriksonSomesh JhaThomas Ristenpart
+  Proceedings of the ACM Conference on Computer and Communications Security (2015) \
+  Link:  https://www.mendeley.com/catalogue/b151e314-cfd3-3e99-8fa8-58615ac81902/ \
+  My Notes on Medium: https://medium.com/@chengmu/3b7ebf3fa5c3 \
+  // NOTES DETAILS TO BE ADDED
+* OpenMinded Blog: What is Differential Privacy (available online: https://blog.openmined.org/a-survey-of-differential-privacy-frameworks/ \
+  Ryffel at al: "A generic framework for privacy preserving deep learning" (available online at arXiv Forum https://arxiv.org/abs/1811.04017 )
+  My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-6-8ae43ab59cfc \
+  // NOTES DETAILS TO BE ADDED
 
   
   
