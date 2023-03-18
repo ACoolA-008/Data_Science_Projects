@@ -67,6 +67,13 @@
   IEEE Security and Privacy (2019) \
   Link: https://www.mendeley.com/catalogue/d4a25ffc-c7ca-3eb1-82aa-4f813bf596c2/ \
   My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-1-e5091beb7c14
+* SoK: Security and Privacy in Machine Learning
+  Papernot, N., McDaniel, P., Sinha, A., & Wellman, M. P.
+  Proceedings - 3rd IEEE European Symposium on Security and Privacy, EURO S and P 2018 (2018)
+  Link: https://www.mendeley.com/catalogue/162a0e1b-3f3c-391a-b209-fafb88869bab/
+  My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-2-5b515f3b89e2
+  // NOTES DETAILS TO BE ADDED
+* 
 
 
   
