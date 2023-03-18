@@ -56,7 +56,10 @@
    W. Q. ZhengJ. S. YuY. X. Zou
    2015 International Conference on Affective Computing and Intelligent Interaction, ACII 2015 (2015)
    Link: https://www.mendeley.com/catalogue/3b8b776a-e572-3455-a3d1-e6748b64bbea/
-  
+ * Pass Receiver Prediction in Soccer using Video and Players’ Trajectories Yutaro Honda, 
+   Rei Kawakami, Ryota Yoshihashi, Kenta Kato, Takeshi Naemura 
+   2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW)
+   Link: https://ieeexplore.ieee.org/document/9857310
   
   
 
