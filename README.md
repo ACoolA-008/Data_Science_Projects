@@ -51,14 +51,12 @@
   2. Crow's Foot ERD 3NF:
   Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Database%20Design%20and%20Modeling/Crow's%20Foot%20ERD%20%203NF.pdf
   
- # Policy Research Projects
- * 2019 Washington State Legislative Seminar Final Portfolio \
-  -- Key components: 10 bills across technology, consumer data privacy, education \
-  Link: https://github.com/ACoolA-008/Policy_Projects/blob/main/BIS%20490%20D%20Portfolio.pdf
+ # Data Science Papers Reading List (Completed)
+ * An experimental study of speech emotion recognition based on deep convolutional neural networks
+   W. Q. ZhengJ. S. YuY. X. Zou
+   2015 International Conference on Affective Computing and Intelligent Interaction, ACII 2015 (2015)
+   Link: https://www.mendeley.com/catalogue/3b8b776a-e572-3455-a3d1-e6748b64bbea/
   
- * What Happens When a Robot Commits Crimes \
-  -- Issues: Legal sovereignty, criminal motivation, cyber crimes \
-  Link: https://github.com/ACoolA-008/Policy_Projects/blob/main/What%20Happens%20When%20a%20Robot%20Commits%20Crimes.pdf
   
   
 
