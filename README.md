@@ -49,7 +49,7 @@
   ![Screen Shot 2023-02-22 at 9 04 22 PM](https://user-images.githubusercontent.com/71044804/220825198-0974d9ce-0caa-4072-8499-d79bd5598c13.png)
 
   2. Crow's Foot ERD 3NF:
-  Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Database%20Design%20and%20Modeling/Crow's%20Foot%20ERD%20%203NF.pdf
+  CLICK on this Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Database%20Design%20and%20Modeling/Crow's%20Foot%20ERD%20%203NF.pdf
   
 # Data Science Papers Reading List (Completed)
 ## Computer Vision and Deep Learning Models
