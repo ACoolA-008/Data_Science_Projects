@@ -92,7 +92,7 @@
   My Notes on Medium: https://medium.com/@chengmu/3b7ebf3fa5c3 \
   // NOTES DETAILS TO BE ADDED
 * OpenMinded Blog: What is Differential Privacy (available online: https://blog.openmined.org/a-survey-of-differential-privacy-frameworks/ \
-  Ryffel at al: "A generic framework for privacy preserving deep learning" (available online at arXiv Forum https://arxiv.org/abs/1811.04017 )
+  Ryffel at al: "A generic framework for privacy preserving deep learning" (available online at arXiv Forum https://arxiv.org/abs/1811.04017) \
   My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-6-8ae43ab59cfc \
   // NOTES DETAILS TO BE ADDED
 
