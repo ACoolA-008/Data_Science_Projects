@@ -72,11 +72,7 @@
   Proceedings - IEEE Symposium on Security and Privacy (2017) \
   Link: https://www.mendeley.com/catalogue/d13cfde8-0c2c-33d0-b43a-f82c3ca1b68c/ \
   My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-3-76e9040748f6 \
-  // NOTES DETAILS TO BE ADDED
-* Medium Blog: FHE and machine learning: A student perspective with examples (available online: https://medium.com/optalysys/fhe-and-machine-learning-a-student-perspective-with-examples-88d70664a6cb) \
-  Authors: Peter Li, Florent Michel, and Joseph Wilson \
-  My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-7-b9588c7334 \
-  // NOTES DETAILS TO BE ADDED  
+  // NOTES DETAILS TO BE ADDED 
 * More: https://github.com/ACoolA-008/Data_Science_Projects/tree/main/Machine_Learning_Papers_Reading_List(Completed)
 
   
