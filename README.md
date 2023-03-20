@@ -95,6 +95,10 @@
   Ryffel at al: "A generic framework for privacy preserving deep learning" (available online at arXiv Forum https://arxiv.org/abs/1811.04017) \
   My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-6-8ae43ab59cfc \
   // NOTES DETAILS TO BE ADDED
+* Medium Blog: FHE and machine learning: A student perspective with examples (available online: https://medium.com/optalysys/fhe-and-machine-learning-a-student-perspective-with-examples-88d70664a6cb) \
+  Authors: Peter Li, Florent Michel, and Joseph Wilson \
+  My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-7-b9588c7334 \
+  // NOTES DETAILS TO BE ADDED  
 
   
   
