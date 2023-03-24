@@ -52,7 +52,7 @@
    Link: https://ui.adsabs.harvard.edu/abs/2020ISPM...37c..50L/abstract \
    Federated Learning: Collaborative Machine Learning without Centralized Training Data \
    Authors: Brendan McMahan and Daniel Ramage, Research Scientists \
-   Link: https://ai.googleblog.com/2017/04/federated-learning-collaborative.html
+   Link: https://ai.googleblog.com/2017/04/federated-learning-collaborative.html \
    My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-8-48d6961597a1
    
    
