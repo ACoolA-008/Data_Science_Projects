@@ -33,7 +33,7 @@
   My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-4-e53198d89974 \
   // NOTES DETAILS TO BE ADDED
 * Model inversion attacks that exploit confidence information and basic countermeasures
-  Matt FredriksonSomesh JhaThomas Ristenpart
+  Matt Fredrikson, Somesh Jha, Thomas Ristenpart
   Proceedings of the ACM Conference on Computer and Communications Security (2015) \
   Link:  https://www.mendeley.com/catalogue/b151e314-cfd3-3e99-8fa8-58615ac81902/ \
   My Notes on Medium: https://medium.com/@chengmu/3b7ebf3fa5c3 \
@@ -46,3 +46,15 @@
   Authors: Peter Li, Florent Michel, and Joseph Wilson \
   My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-7-b9588c7334 \
   // NOTES DETAILS TO BE ADDED  
+ * Federated Learning: Challenges, Methods, and Future Directions
+   Tian LiAnit Kumar SahuAmeet TalwalkarVirginia SmithSee fewer
+   IEEE Signal Processing Magazine (2020) \
+   Link: https://ui.adsabs.harvard.edu/abs/2020ISPM...37c..50L/abstract \
+   Federated Learning: Collaborative Machine Learning without Centralized Training Data \
+   Authors: Brendan McMahan and Daniel Ramage, Research Scientists \
+   Link: https://ai.googleblog.com/2017/04/federated-learning-collaborative.html
+   My Notes on Medium: https://medium.com/@chengmu/ppml-reading-notes-and-summary-8-48d6961597a1 \
+   
+   
+   
+   
