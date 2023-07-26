@@ -1,16 +1,5 @@
 # Data_Science_Projects
 
-# Healthcare Projects
-* Retinal OCT Image Classification with CNN \
-  -- Dataset from Kaggle: https://www.kaggle.com/datasets/paultimothymooney/kermany2018 \
-  -- Framework: PyTorch \
-  <img width="766" alt="Screen Shot 2023-03-16 at 10 08 29 AM" src="https://user-images.githubusercontent.com/71044804/225700476-a272d61d-db98-4ad7-a582-1f747a0da04c.png"> \
-  -- Accuracy: 
-  Test Dataset - Accuracy: 82.54%, Loss: 0.0037% \
-  Valid Dataset - Accuracy: 81.25%, Loss: 0.0149% \
-  Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Healthcare%20Projects/Retinal_OCT_Image_Classification_CNN.ipynb
-
-
 # Python Projects
 * DataCo Supply Chain Company Data Analysis and Docker Web Application: \
   -- Skills and Tools: Python, Docker, Streamlit, scikit-learn, k-fold cross-validation, Decision Tree, Random Forest, Gradient Boosting, Bagging, KNN,       pandas, numpy, matplotlib, geopandas, folium, plotly, precision, recall, f1 score, statistical metrics, and etc. \
@@ -50,6 +39,16 @@
 
   2. Crow's Foot ERD 3NF:
   CLICK on this Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Database%20Design%20and%20Modeling/Crow's%20Foot%20ERD%20%203NF.pdf
+
+* Retinal OCT Image Classification with CNN \
+  -- Dataset from Kaggle: https://www.kaggle.com/datasets/paultimothymooney/kermany2018 \
+  -- Framework: PyTorch \
+  <img width="766" alt="Screen Shot 2023-03-16 at 10 08 29 AM" src="https://user-images.githubusercontent.com/71044804/225700476-a272d61d-db98-4ad7-a582-1f747a0da04c.png"> \
+  -- Accuracy: 
+  Test Dataset - Accuracy: 82.54%, Loss: 0.0037% \
+  Valid Dataset - Accuracy: 81.25%, Loss: 0.0149% \
+  Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Healthcare%20Projects/Retinal_OCT_Image_Classification_CNN.ipynb
+  
   
 # Data Science Papers Reading List (Completed)
 ## Computer Vision and Deep Learning Models
