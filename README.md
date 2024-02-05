@@ -54,7 +54,8 @@
   -- Demonstrated architecture diagrams.
   ![Screen Shot 2024-02-04 at 8 58 47 PM](https://github.com/ACoolA-008/Data_Science_Projects/assets/71044804/26e9d95b-9d0d-499a-872d-d925d12aafc4)
   ![model](https://github.com/ACoolA-008/Data_Science_Projects/assets/71044804/6067f117-c6e1-48b2-b674-b9b48d65f1c5)
-  ![convnet_fig](https://github.com/ACoolA-008/Data_Science_Projects/assets/71044804/107194a3-f18b-4c47-9065-d5e92214f783)
+![convnet_fig (1)](https://github.com/ACoolA-008/Data_Science_Projects/assets/71044804/d186a66f-f0ef-4498-b816-062985266191)
+
 
   
 # Data Science Papers Reading List (Completed)
