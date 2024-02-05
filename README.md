@@ -48,7 +48,14 @@
   Test Dataset - Accuracy: 82.54%, Loss: 0.0037% \
   Valid Dataset - Accuracy: 81.25%, Loss: 0.0149% \
   Link: https://github.com/ACoolA-008/Data_Science_Projects/blob/main/Healthcare%20Projects/Retinal_OCT_Image_Classification_CNN.ipynb
-  
+
+* Cats and Dogs Classification with CNN and Transfer Learning
+  -- Built a basic convolutional neural network with 2 convolutional layers, 2 maxpooling layers, 1 flatten layer, 1 dense layer, 1 dropout layer and 1 output.
+  -- Demonstrated architecture diagrams.
+  ![Screen Shot 2024-02-04 at 8 58 47 PM](https://github.com/ACoolA-008/Data_Science_Projects/assets/71044804/26e9d95b-9d0d-499a-872d-d925d12aafc4)
+  ![model](https://github.com/ACoolA-008/Data_Science_Projects/assets/71044804/6067f117-c6e1-48b2-b674-b9b48d65f1c5)
+  ![convnet_fig](https://github.com/ACoolA-008/Data_Science_Projects/assets/71044804/107194a3-f18b-4c47-9065-d5e92214f783)
+
   
 # Data Science Papers Reading List (Completed)
 ## Computer Vision and Deep Learning Models
